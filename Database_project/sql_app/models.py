@@ -1,26 +1,44 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey, Float
 from sqlalchemy.orm import relationship
-
 from .database import Base
 
 
-class User(Base):
-    __tablename__ = "users"
+class Equipment(Base):
+    __tablename__ = "equipment"
 
     id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True)
-    hashed_password = Column(String)
-    is_active = Column(Boolean, default=True)
+    name = Column(String)
+    inventory_number = Column(String)
+    term_of_operation = Column(Integer)
+    start_of_operation = Column(String)
+    manufacturer = Column(String)
 
-    items = relationship("Item", back_populates="owner")
+    product_specifications = relationship("ProductSpecification", back_populates="equipment")
 
 
-class Item(Base):
-    __tablename__ = "items"
+class Material(Base):
+    __tablename__ = "material"
 
     id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, index=True)
-    description = Column(String, index=True)
-    owner_id = Column(Integer, ForeignKey("users.id"))
+    name = Column(String)
+    type = Column(String)
+    price_per_unit = Column(Float)
+    unit_of_measurement = Column(String)
+    alternative = Column(String)
 
-    owner = relationship("User", back_populates="items")
+    product_specifications = relationship("ProductSpecification", back_populates="material")
+
+
+class ProductSpecification(Base):
+    __tablename__ = "product_specification"
+
+    id = Column(Integer, primary_key=True, index=True)
+    quantity = Column(Integer)
+    name = Column(String)
+    production_duration = Column(Integer, nullable=True)
+
+    equipment_id = Column(Integer, ForeignKey("equipment.id"))
+    equipment = relationship("Equipment", back_populates="product_specifications")
+
+    material_id = Column(Integer, ForeignKey("material.id"))
+    material = relationship("Material", back_populates="product_specifications")

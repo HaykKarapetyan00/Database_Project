@@ -1,35 +1,59 @@
 from pydantic import BaseModel
+from typing import Optional
 
 
-class ItemBase(BaseModel):
-    title: str
-    description: str | None = None
+class EquipmentBase(BaseModel):
+    name: str
+    inventory_number: str
+    term_of_operation: int
+    start_of_operation: str
+    manufacturer: str
 
 
-class ItemCreate(ItemBase):
+class EquipmentCreate(EquipmentBase):
     pass
 
 
-class Item(ItemBase):
+class Equipment(EquipmentBase):
     id: int
-    owner_id: int
 
     class Config:
         orm_mode = True
 
 
-class UserBase(BaseModel):
-    email: str
+class MaterialBase(BaseModel):
+    name: str
+    type: str
+    price_per_unit: float
+    unit_of_measurement: str
+    alternative: Optional[str]
 
 
-class UserCreate(UserBase):
-    password: str
+class MaterialCreate(MaterialBase):
+    pass
 
 
-class User(UserBase):
+class Material(MaterialBase):
     id: int
-    is_active: bool
-    items: list[Item] = []
+
+    class Config:
+        orm_mode = True
+
+
+class ProductSpecificationBase(BaseModel):
+    quantity: int
+    name: str
+    production_duration: Optional[int]
+
+
+class ProductSpecificationCreate(ProductSpecificationBase):
+    pass
+
+
+class ProductSpecification(ProductSpecificationBase):
+    id: int
+    equipment_id: int
+    material_id: int
 
     class Config:
         orm_mode = True

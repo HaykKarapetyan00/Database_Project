@@ -1,36 +1,51 @@
 from sqlalchemy.orm import Session
-
 from . import models, schemas
+from typing import List
 
 
-def get_user(db: Session, user_id: int):
-    return db.query(models.User).filter(models.User.id == user_id).first()
-
-
-def get_user_by_email(db: Session, email: str):
-    return db.query(models.User).filter(models.User.email == email).first()
-
-
-def get_users(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.User).offset(skip).limit(limit).all()
-
-
-def create_user(db: Session, user: schemas.UserCreate):
-    fake_hashed_password = user.password + "notreallyhashed"
-    db_user = models.User(email=user.email, hashed_password=fake_hashed_password)
-    db.add(db_user)
+def create_equipment(db: Session, equipment: schemas.EquipmentCreate):
+    db_equipment = models.Equipment(**equipment.dict())
+    db.add(db_equipment)
     db.commit()
-    db.refresh(db_user)
-    return db_user
+    db.refresh(db_equipment)
+    return db_equipment
 
 
-def get_items(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Item).offset(skip).limit(limit).all()
+def get_equipment(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Equipment).offset(skip).limit(limit).all()
 
 
-def create_user_item(db: Session, item: schemas.ItemCreate, user_id: int):
-    db_item = models.Item(**item.dict(), owner_id=user_id)
-    db.add(db_item)
+def get_equipment_by_id(db: Session, equipment_id: int):
+    return db.query(models.Equipment).filter(models.Equipment.id == equipment_id).first()
+
+
+def create_material(db: Session, material: schemas.MaterialCreate):
+    db_material = models.Material(**material.dict())
+    db.add(db_material)
     db.commit()
-    db.refresh(db_item)
-    return db_item
+    db.refresh(db_material)
+    return db_material
+
+
+def get_material(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Material).offset(skip).limit(limit).all()
+
+
+def get_material_by_id(db: Session, material_id: int):
+    return db.query(models.Material).filter(models.Material.id == material_id).first()
+
+
+def create_product_specification(db: Session, product_specification: schemas.ProductSpecificationCreate):
+    db_product_specification = models.ProductSpecification(**product_specification.dict())
+    db.add(db_product_specification)
+    db.commit()
+    db.refresh(db_product_specification)
+    return db_product_specification
+
+
+def get_product_specification(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.ProductSpecification).offset(skip).limit(limit).all()
+
+
+def get_product_specification_by_id(db: Session, product_specification_id: int):
+    return db.query(models.ProductSpecification).filter(models.ProductSpecification.id == product_specification_id).first()
