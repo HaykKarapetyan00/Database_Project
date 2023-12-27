@@ -4,11 +4,12 @@ from . import crud, models, schemas
 from .database import SessionLocal, engine
 from typing import List
 
+# main.py run by -> uvicorn sql_app.main:app --reload from database folder
+
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-# Dependency
 def get_db():
     db = SessionLocal()
     try:
@@ -16,7 +17,32 @@ def get_db():
     finally:
         db.close()
 
+#database population for equipments...
 
+@app.on_event("startup")
+def startup_fill_db():
+    db = SessionLocal()
+    num_equipment = db.query(models.Equipment).count()
+    if num_equipment == 0:
+        equipments = []
+        for i in range(1000):
+            temp_equipment = {
+                'name': f"Equipment {i + 1}",
+                'inventory_number': f"Inventory {i + 1}",
+                'term_of_operation': 5,
+                'start_of_operation': '2023-01-01',
+                'manufacturer': f"Manufacturer {i + 1}"
+            }
+            equipments.append(temp_equipment)
+        for equipment in equipments:
+            crud.create_equipment(db, schemas.EquipmentCreate(**equipment))
+        db.close()
+        print("Equipments populated.")
+    else:
+        print(f"{num_equipment} equipment(s) already exist")
+
+#decorators
+        
 @app.post("/equipment/", response_model=schemas.Equipment)
 def create_equipment(equipment: schemas.EquipmentCreate, db: Session = Depends(get_db)):
     return crud.create_equipment(db=db, equipment=equipment)
@@ -69,3 +95,48 @@ def read_product_specification(product_specification_id: int, db: Session = Depe
     if db_product_specification is None:
         raise HTTPException(status_code=404, detail="Product Specification not found")
     return db_product_specification
+
+def update_decorator(type_name):
+    def decorator(func):
+        def wrapper(db: Session, item_id: int, item_update: type):
+            db_item = func(db, item_id, item_update)
+            if not db_item:
+                raise HTTPException(status_code=404, detail=f"{type_name} not found")
+            return db_item
+        return wrapper
+    return decorator
+
+def delete_decorator(type_name):
+    def decorator(func):
+        def wrapper(db: Session, item_id: int):
+            db_item = func(db, item_id)
+            if not db_item:
+                raise HTTPException(status_code=404, detail=f"{type_name} not found")
+            return db_item
+        return wrapper
+    return decorator
+
+@app.put("/equipment/{equipment_id}")
+def update_equipment(equipment_id: int, equipment_update: schemas.EquipmentUpdate, db: Session = Depends(get_db)):
+    return crud.update_equipment(db, equipment_id, equipment_update)
+
+@app.delete("/equipment/{equipment_id}")
+def delete_equipment(equipment_id: int, db: Session = Depends(get_db)):
+    return crud.delete_equipment(db, equipment_id)
+
+@app.put("/material/{material_id}")
+def update_material(material_id: int, material_update: schemas.MaterialUpdate, db: Session = Depends(get_db)):
+    return crud.update_material(db, material_id, material_update)
+
+@app.delete("/material/{material_id}")
+def delete_material(material_id: int, db: Session = Depends(get_db)):
+    return crud.delete_material(db, material_id)
+
+
+@app.put("/product-specification/{product_specification_id}")
+def update_product_specification(product_specification_id: int, product_specification_update: schemas.ProductSpecificationUpdate, db: Session = Depends(get_db)):
+    return crud.update_product_specification(db, product_specification_id, product_specification_update)
+
+@app.delete("/product-specification/{product_specification_id}")
+def delete_product_specification(product_specification_id: int, db: Session = Depends(get_db)):
+    return crud.delete_product_specification(db, product_specification_id)

@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
 
+# schemas for crud types...
 
 class EquipmentBase(BaseModel):
     name: str
@@ -20,6 +21,15 @@ class Equipment(EquipmentBase):
     class Config:
         orm_mode = True
 
+class EquipmentUpdate(BaseModel):
+    name: Optional[str]
+    inventory_number: Optional[str]
+    term_of_operation: Optional[int]
+    start_of_operation: Optional[str]
+    manufacturer: Optional[str]
+
+class EquipmentDelete(BaseModel):
+    id: int
 
 class MaterialBase(BaseModel):
     name: str
@@ -39,6 +49,15 @@ class Material(MaterialBase):
     class Config:
         orm_mode = True
 
+class MaterialUpdate(BaseModel):
+    name: Optional[str]
+    type: Optional[str]
+    price_per_unit: Optional[float]
+    unit_of_measurement: Optional[str]
+    alternative: Optional[str]
+
+class MaterialDelete(BaseModel):
+    id: int
 
 class ProductSpecificationBase(BaseModel):
     quantity: int
@@ -57,3 +76,12 @@ class ProductSpecification(ProductSpecificationBase):
 
     class Config:
         orm_mode = True
+
+
+class ProductSpecificationUpdate(BaseModel):
+    quantity: Optional[int]
+    name: Optional[str]
+    production_duration: Optional[int]
+
+class ProductSpecificationDelete(BaseModel):
+    id: int
